@@ -1,72 +1,110 @@
-package fodler.in.locker;
+package timerStopwatch.in.code;
 
 
-	import java.io.File;
-	import java.util.Scanner;
+	import javax.swing.*;
+	import java.awt.*;
+	import java.awt.event.ActionEvent;
+	import java.awt.event.ActionListener;
 
-	public class Main {
-	    private static final String FOLDER_PATH = "locked_folder";
-	    private static final String PASSWORD = "password123";
+	public class Main  extends JFrame {
+	    private JLabel timerLabel;
+	    private JButton startButton;
+	    private JButton resetButton;
+	    private Timer countdownTimer;
+	    private long startTime;
+	    private long elapsedTime;
+
+	    public Main() {
+	        setTitle("Timer and Stopwatch");
+	        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	        setLayout(new FlowLayout());
+
+	        timerLabel = new JLabel("00:00:00");
+	        timerLabel.setFont(new Font("Arial", Font.BOLD, 40));
+	        add(timerLabel);
+
+	        startButton = new JButton("Start");
+	        add(startButton);
+
+	        resetButton = new JButton("Reset");
+	        add(resetButton);
+
+	        countdownTimer = new Timer(1000, new ActionListener() {
+	            @Override
+	            public void actionPerformed(ActionEvent e) {
+	                updateTimer();
+	            }
+	        });
+
+	        startButton.addActionListener(new ActionListener() {
+	            @Override
+	            public void actionPerformed(ActionEvent e) {
+	                if (!countdownTimer.isRunning()) {
+	                    startTimer();
+	                    startButton.setText("Pause");
+	                } else {
+	                    pauseTimer();
+	                    startButton.setText("Resume");
+	                }
+	            }
+	        });
+
+	        resetButton.addActionListener(new ActionListener() {
+	            @Override
+	            public void actionPerformed(ActionEvent e) {
+	                resetTimer();
+	                startButton.setText("Start");
+	            }
+	        });
+
+	        pack();
+	        setLocationRelativeTo(null);
+	    }
+
+	    private void startTimer() {
+	        if (!countdownTimer.isRunning()) {
+	            startTime = System.currentTimeMillis() - elapsedTime;
+	            countdownTimer.start();
+	        }
+	    }
+
+	    private void pauseTimer() {
+	        if (countdownTimer.isRunning()) {
+	            countdownTimer.stop();
+	            elapsedTime = System.currentTimeMillis() - startTime;
+	        }
+	    }
+
+	    private void resetTimer() {
+	        countdownTimer.stop();
+	        timerLabel.setText("00:00:00");
+	        elapsedTime = 0;
+	    }
+
+	    private void updateTimer() {
+	        long currentTime = System.currentTimeMillis();
+	        long deltaTime = currentTime - startTime + elapsedTime;
+	        int seconds = (int) (deltaTime / 1000);
+	        int minutes = seconds / 60;
+	        int hours = minutes / 60;
+
+	        seconds %= 60;
+	        minutes %= 60;
+
+	        String timeText = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+	        timerLabel.setText(timeText);
+	    }
 
 	    public static void main(String[] args) {
-	        Scanner scanner = new Scanner(System.in);
-
-	        while (true) {
-	            System.out.println("Enter a command: ");
-	            System.out.println("1 - Lock Folder");
-	            System.out.println("2 - Unlock Folder");
-	            System.out.println("3 - Exit");
-
-	            int choice = scanner.nextInt();
-	            scanner.nextLine(); // Consume the newline
-
-	            switch (choice) {
-	                case 1:
-	                    System.out.println("Enter password to lock the folder: ");
-	                    String enteredPassword = scanner.nextLine();
-	                    if (enteredPassword.equals(PASSWORD)) {
-	                        lockFolder();
-	                        System.out.println("Folder locked successfully.");
-	                    } else {
-	                        System.out.println("Incorrect password. Folder not locked.");
-	                    }
-	                    break;
-	                case 2:
-	                    System.out.println("Enter password to unlock the folder: ");
-	                    enteredPassword = scanner.nextLine();
-	                    if (enteredPassword.equals(PASSWORD)) {
-	                        unlockFolder();
-	                        System.out.println("Folder unlocked successfully.");
-	                    } else {
-	                        System.out.println("Incorrect password. Folder not unlocked.");
-	                    }
-	                    break;
-	                case 3:
-	                    System.out.println("Exiting...");
-	                    scanner.close();
-	                    System.exit(0);
-	                    break;
-	                default:
-	                    System.out.println("Invalid choice. Please enter a valid option.");
+	        SwingUtilities.invokeLater(new Runnable() {
+	            @Override
+	            public void run() {
+	                new Main().setVisible(true);
 	            }
-	        }
-	    }
-
-	    private static void lockFolder() {
-	        File folder = new File(FOLDER_PATH);
-	        if (!folder.exists()) {
-	            folder.mkdir();
-	        }
-	        folder.renameTo(new File(FOLDER_PATH + ".locked"));
-	    }
-
-	    private static void unlockFolder() {
-	        File lockedFolder = new File(FOLDER_PATH + ".locked");
-	        File folder = new File(FOLDER_PATH);
-	        if (lockedFolder.exists()) {
-	            lockedFolder.renameTo(folder);
-	        }
+	        });
 	    }
 	}
 
+	
+	
 
